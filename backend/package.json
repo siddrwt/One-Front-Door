@@ -1,0 +1,45 @@
+{
+  "name": "campus-assistant-backend",
+  "version": "1.0.0",
+  "description": "Backend for the One Front Door campus assistant (multi-domain routing bot for CAMU)",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test:queries": "node test/testQueries.js",
+    "seed:students": "node scripts/seedStudents.js",
+    "test:guardrail": "node test/testGuardrail.js",
+    "test": "npm run test:guardrail && npm run test:adapter && npm run test:flow && npm run test:feedback",
+    "test:adapter": "node test/testAdapter.js",
+    "test:flow": "node test/testFlow.js",
+    "test:feedback": "node test/testFeedback.js",
+    "test:ai": "node test/testHfConnection.js",
+    "test:retry": "node test/testAiRetry.js",
+    "test:explainability": "node test/testExplainabilityResponse.js",
+    "test:it": "node test/testItPreRouting.js",
+    "test:grounded": "node test/testGroundedSources.js",
+    "mock:ai": "node scripts/mockAiServer.js",
+    "start:ai": "python ../ai_service/app.py",
+    "eval": "node scripts/runEval.js",
+    "eval:verbose": "node scripts/runEval.js -- --verbose",
+    "eval:report": "node scripts/runEval.js -- --verbose --output reports/eval_latest.json"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.2.0",
+    "helmet": "^7.1.0",
+    "joi": "^17.13.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.4.1",
+    "morgan": "^1.10.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.3"
+  }
+}

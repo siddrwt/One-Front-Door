@@ -1,0 +1,1179 @@
+[
+  {
+    "id": "fees_001",
+    "query": "When is the semester fee due?",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Core fees query; should route to fees with sources"
+  },
+  {
+    "id": "fees_002",
+    "query": "How do I pay my tuition fee online?",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fees_003",
+    "query": "What happens if I miss the fee payment deadline?",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Late fee policy; answer in mock"
+  },
+  {
+    "id": "fees_004",
+    "query": "Are there any scholarships available for merit students?",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fees_005",
+    "query": "What is the late fee penalty for delayed semester payment?",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fees_006",
+    "query": "Is there an installment option for paying fees?",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fees_007",
+    "query": "How can I get a fee receipt for my payment?",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fees_008",
+    "query": "What documents are required for a fee waiver application?",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fees_009",
+    "query": "Can I pay fees in cash at the accounts office?",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fees_010",
+    "query": "What is included in the total semester fee structure?",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fees_011",
+    "query": "wen is the semster fee duedate?",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "misspelled",
+    "notes": "Typo: semster, duedate"
+  },
+  {
+    "id": "fees_012",
+    "query": "how to paay tution fees onlne",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "misspelled",
+    "notes": "Multiple typos; should still resolve to fees"
+  },
+  {
+    "id": "fees_013",
+    "query": "scolarship application for merit stdents",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "misspelled",
+    "notes": "Typo: scolarship, stdents"
+  },
+  {
+    "id": "fees_014",
+    "query": "Can I get a refund if I withdraw from a course?",
+    "expectedDomain": "fees",
+    "expectedDecision": "no_answer",
+    "category": "easy",
+    "notes": "Mock forces no_answer for refund queries; tests REQUIRE_SOURCES path"
+  },
+  {
+    "id": "fees_015",
+    "query": "What is the refund policy for early withdrawal?",
+    "expectedDomain": "fees",
+    "expectedDecision": "no_answer",
+    "category": "easy",
+    "notes": "Refund keyword; expected no_answer → department handoff"
+  },
+  {
+    "id": "exam_001",
+    "query": "When does the end semester exam start?",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "exam_002",
+    "query": "How do I apply for revaluation of my exam paper?",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "exam_003",
+    "query": "Where can I find the exam timetable?",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "exam_004",
+    "query": "What is the syllabus for the mid-semester exam?",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "exam_005",
+    "query": "Can I take supplementary exams if I fail a subject?",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "exam_006",
+    "query": "What is the minimum attendance required to appear in exams?",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "exam_007",
+    "query": "How are revaluation requests processed?",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "exam_008",
+    "query": "Is there a grace period for exam form submission?",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "exam_009",
+    "query": "What happens if I miss an exam due to illness?",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "exam_010",
+    "query": "How do I get my marksheet after results are declared?",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "exam_011",
+    "query": "wen is examiation timtable relased",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "misspelled",
+    "notes": "Typo: examiation, timtable, relased"
+  },
+  {
+    "id": "exam_012",
+    "query": "how to appply for revalution",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "misspelled",
+    "notes": "Typo: appply, revalution"
+  },
+  {
+    "id": "it_001",
+    "query": "I can't connect to the campus wifi",
+    "expectedDomain": "it",
+    "expectedDecision": "handoff",
+    "category": "easy",
+    "notes": "Clear IT-only; triggers keyword rule → handoff"
+  },
+  {
+    "id": "it_002",
+    "query": "My LMS is not working, I can't access Moodle",
+    "expectedDomain": "it",
+    "expectedDecision": "handoff",
+    "category": "easy"
+  },
+  {
+    "id": "it_003",
+    "query": "How do I reset my university portal password?",
+    "expectedDomain": "it",
+    "expectedDecision": "handoff",
+    "category": "easy"
+  },
+  {
+    "id": "it_004",
+    "query": "The internet is not working in my hostel room",
+    "expectedDomain": "it",
+    "expectedDecision": "handoff",
+    "category": "easy"
+  },
+  {
+    "id": "it_005",
+    "query": "I can't log in to my university email account",
+    "expectedDomain": "it",
+    "expectedDecision": "handoff",
+    "category": "easy"
+  },
+  {
+    "id": "it_006",
+    "query": "The VPN is not connecting from off campus",
+    "expectedDomain": "it",
+    "expectedDecision": "handoff",
+    "category": "easy"
+  },
+  {
+    "id": "it_007",
+    "query": "I forgot my LMS password and can't log in",
+    "expectedDomain": "it",
+    "expectedDecision": "handoff",
+    "category": "easy"
+  },
+  {
+    "id": "it_008",
+    "query": "wifi is down in block C",
+    "expectedDomain": "it",
+    "expectedDecision": "handoff",
+    "category": "easy"
+  },
+  {
+    "id": "it_009",
+    "query": "login issue with student portal, password not working",
+    "expectedDomain": "it",
+    "expectedDecision": "handoff",
+    "category": "easy"
+  },
+  {
+    "id": "it_010",
+    "query": "I cannot access my college email id",
+    "expectedDomain": "it",
+    "expectedDecision": "handoff",
+    "category": "easy"
+  },
+  {
+    "id": "fac_001",
+    "query": "How do I raise a maintenance request for my classroom?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fac_002",
+    "query": "What are the library timings on weekends?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fac_003",
+    "query": "Is the canteen open during exam season?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fac_004",
+    "query": "How do I report a broken projector in the lecture hall?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fac_005",
+    "query": "Where is the nearest ATM on campus?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fac_006",
+    "query": "How do I book a seminar room for a club event?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fac_007",
+    "query": "Who do I contact for hostel room maintenance?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Hostel maintenance maps to facilities domain"
+  },
+  {
+    "id": "fac_008",
+    "query": "Is there a gym available on campus?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fac_009",
+    "query": "When does the computer lab close?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fac_010",
+    "query": "What is the process for raising a facilities helpdesk ticket?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fac_011",
+    "query": "When does hostel allotment open for the new semester?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Housing label maps to facilities domain"
+  },
+  {
+    "id": "fac_012",
+    "query": "How do I apply for a hostel room?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fac_013",
+    "query": "Who is the warden for block A hostel?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "fac_014",
+    "query": "Can I change my hostel accommodation mid-semester?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "career_001",
+    "query": "When does the placement season start?",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "career_002",
+    "query": "How do I register for campus recruitment drives?",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "career_003",
+    "query": "What is the minimum CGPA required to sit for placements?",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "career_004",
+    "query": "Where can I find upcoming internship opportunities?",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "career_005",
+    "query": "How do I submit my resume to the placement cell?",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "career_006",
+    "query": "Which companies are visiting for recruitment this semester?",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "career_007",
+    "query": "Can off-campus job offers be registered with the placement cell?",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "career_008",
+    "query": "Is there a mock interview facility available?",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "career_009",
+    "query": "What documents do I need for the recruitment drive?",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "career_010",
+    "query": "How can I get a no-objection certificate for an off-campus internship?",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "easy"
+  },
+  {
+    "id": "career_011",
+    "query": "wen does placemnt sezon strt",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "misspelled",
+    "notes": "Heavy typos; should still resolve to career"
+  },
+  {
+    "id": "career_012",
+    "query": "how to regster for internship oportunity",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "misspelled"
+  },
+  {
+    "id": "ood_001",
+    "query": "What is the weather today?",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "out_of_domain",
+    "notes": "Completely irrelevant; should return out_of_scope"
+  },
+  {
+    "id": "ood_002",
+    "query": "Who won the cricket match yesterday?",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "out_of_domain"
+  },
+  {
+    "id": "ood_003",
+    "query": "Tell me a joke",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "out_of_domain"
+  },
+  {
+    "id": "ood_004",
+    "query": "What is the capital of France?",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "out_of_domain"
+  },
+  {
+    "id": "ood_005",
+    "query": "Can you help me write a Python script?",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "out_of_domain"
+  },
+  {
+    "id": "ood_006",
+    "query": "What are the best restaurants near campus?",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "out_of_domain",
+    "notes": "Near-campus but not a university domain"
+  },
+  {
+    "id": "ood_007",
+    "query": "How do I apply for a passport?",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "out_of_domain"
+  },
+  {
+    "id": "ood_008",
+    "query": "Can you recommend a good textbook for machine learning?",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "out_of_domain"
+  },
+  {
+    "id": "ood_009",
+    "query": "What is the university's sports team ranking nationally?",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "out_of_domain"
+  },
+  {
+    "id": "ood_010",
+    "query": "I need help with my personal tax returns",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "out_of_domain"
+  },
+  {
+    "id": "personal_001",
+    "query": "What are my results for the semester?",
+    "expectedDomain": null,
+    "expectedDecision": "personal_data_unavailable",
+    "category": "easy",
+    "notes": "Guardrail blocks before AI call"
+  },
+  {
+    "id": "personal_002",
+    "query": "Show me my marks for the mid-term exam",
+    "expectedDomain": null,
+    "expectedDecision": "personal_data_unavailable",
+    "category": "easy"
+  },
+  {
+    "id": "personal_003",
+    "query": "What is my CGPA this semester?",
+    "expectedDomain": null,
+    "expectedDecision": "personal_data_unavailable",
+    "category": "easy"
+  },
+  {
+    "id": "personal_004",
+    "query": "How many backlogs do I have?",
+    "expectedDomain": null,
+    "expectedDecision": "personal_data_unavailable",
+    "category": "easy"
+  },
+  {
+    "id": "personal_005",
+    "query": "What are my grades for advanced algorithms?",
+    "expectedDomain": null,
+    "expectedDecision": "personal_data_unavailable",
+    "category": "easy"
+  },
+  {
+    "id": "personal_006",
+    "query": "What is my SGPA this term?",
+    "expectedDomain": null,
+    "expectedDecision": "personal_data_unavailable",
+    "category": "easy"
+  },
+  {
+    "id": "personal_007",
+    "query": "Can I see my transcript?",
+    "expectedDomain": null,
+    "expectedDecision": "personal_data_unavailable",
+    "category": "easy"
+  },
+  {
+    "id": "personal_008",
+    "query": "What is my score in the internal exams?",
+    "expectedDomain": null,
+    "expectedDecision": "personal_data_unavailable",
+    "category": "easy"
+  },
+  {
+    "id": "amb_001",
+    "query": "What is the deadline?",
+    "expectedDomain": null,
+    "expectedDecision": "clarification",
+    "category": "ambiguous",
+    "notes": "Vague 'deadline' — mock triggers clarification for fees/exam"
+  },
+  {
+    "id": "amb_002",
+    "query": "I have a problem with my payment",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "ambiguous",
+    "notes": "Payment likely fees; could be IT portal payment issue"
+  },
+  {
+    "id": "amb_003",
+    "query": "I need to register",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "ambiguous",
+    "notes": "Registration is out of our 5 domains"
+  },
+  {
+    "id": "amb_004",
+    "query": "Can you tell me about the schedule?",
+    "expectedDomain": null,
+    "expectedDecision": "clarification",
+    "category": "ambiguous",
+    "notes": "Schedule could be exam timetable or career drive"
+  },
+  {
+    "id": "amb_005",
+    "query": "I have a query about my application",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "ambiguous",
+    "notes": "Admissions/registration — out of scope"
+  },
+  {
+    "id": "amb_006",
+    "query": "What documents do I need?",
+    "expectedDomain": null,
+    "expectedDecision": "clarification",
+    "category": "ambiguous",
+    "notes": "Extremely vague; documents could apply to many domains"
+  },
+  {
+    "id": "amb_007",
+    "query": "How do I submit the form?",
+    "expectedDomain": null,
+    "expectedDecision": "clarification",
+    "category": "ambiguous",
+    "notes": "Which form? Exam, placement, fees, facilities?"
+  },
+  {
+    "id": "amb_008",
+    "query": "Is there any issue with my account?",
+    "expectedDomain": null,
+    "expectedDecision": "clarification",
+    "category": "ambiguous",
+    "notes": "Account could be IT portal or fees account"
+  },
+  {
+    "id": "amb_009",
+    "query": "I need help urgently",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "ambiguous",
+    "notes": "No domain signal at all"
+  },
+  {
+    "id": "amb_010",
+    "query": "What is the process?",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "ambiguous",
+    "notes": "Completely context-less"
+  },
+  {
+    "id": "short_001",
+    "query": "fees?",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "ambiguous",
+    "notes": "Single word; should still resolve to fees"
+  },
+  {
+    "id": "short_002",
+    "query": "exam timetable",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "ambiguous",
+    "notes": "Two words, clear signal"
+  },
+  {
+    "id": "short_003",
+    "query": "wifi",
+    "expectedDomain": "it",
+    "expectedDecision": "handoff",
+    "category": "ambiguous",
+    "notes": "Single word triggering IT keyword rule"
+  },
+  {
+    "id": "short_004",
+    "query": "placement",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "ambiguous",
+    "notes": "Single word; career domain"
+  },
+  {
+    "id": "short_005",
+    "query": "hostel",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "ambiguous",
+    "notes": "Single word hostel; Housing → facilities"
+  },
+  {
+    "id": "short_006",
+    "query": "library",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "ambiguous",
+    "notes": "Single word; facilities domain"
+  },
+  {
+    "id": "short_007",
+    "query": "revaluation",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "ambiguous",
+    "notes": "Single word; exam domain"
+  },
+  {
+    "id": "multi_001",
+    "query": "When is the fee payment deadline and when do exams start?",
+    "expectedDomain": null,
+    "expectedDecision": "multi_answer",
+    "expectedDomains": [
+      "fees",
+      "examination"
+    ],
+    "category": "multi_domain",
+    "notes": "Classic two-domain query with joiner 'and'"
+  },
+  {
+    "id": "multi_002",
+    "query": "How do I pay my fees and also where is the library?",
+    "expectedDomain": null,
+    "expectedDecision": "multi_answer",
+    "expectedDomains": [
+      "fees",
+      "facilities"
+    ],
+    "category": "multi_domain"
+  },
+  {
+    "id": "multi_003",
+    "query": "Where do I pay hostel fees and how do I connect to wifi?",
+    "expectedDomain": null,
+    "expectedDecision": "multi_answer",
+    "expectedDomains": [
+      "fees",
+      "it"
+    ],
+    "category": "multi_domain",
+    "notes": "IT + fees multi-intent; previously a regression bug"
+  },
+  {
+    "id": "multi_004",
+    "query": "Tell me about the exam schedule and also about placement drives",
+    "expectedDomain": null,
+    "expectedDecision": "multi_answer",
+    "expectedDomains": [
+      "examination",
+      "career_services"
+    ],
+    "category": "multi_domain"
+  },
+  {
+    "id": "multi_005",
+    "query": "I need to know about the scholarship and internship registration",
+    "expectedDomain": null,
+    "expectedDecision": "multi_answer",
+    "expectedDomains": [
+      "fees",
+      "career_services"
+    ],
+    "category": "multi_domain"
+  },
+  {
+    "id": "multi_006",
+    "query": "What is the hostel allotment process and the exam revaluation procedure?",
+    "expectedDomain": null,
+    "expectedDecision": "multi_answer",
+    "expectedDomains": [
+      "facilities",
+      "examination"
+    ],
+    "category": "multi_domain"
+  },
+  {
+    "id": "multi_007",
+    "query": "Is the canteen open during exams? Also how do I register for the placement drive?",
+    "expectedDomain": null,
+    "expectedDecision": "multi_answer",
+    "expectedDomains": [
+      "facilities",
+      "career_services"
+    ],
+    "category": "multi_domain"
+  },
+  {
+    "id": "multi_008",
+    "query": "How do I pay fees online and how do I raise a maintenance request?",
+    "expectedDomain": null,
+    "expectedDecision": "multi_answer",
+    "expectedDomains": [
+      "fees",
+      "facilities"
+    ],
+    "category": "multi_domain"
+  },
+  {
+    "id": "multi_009",
+    "query": "I want to know about the tuition payment schedule and also the exam timetable",
+    "expectedDomain": null,
+    "expectedDecision": "multi_answer",
+    "expectedDomains": [
+      "fees",
+      "examination"
+    ],
+    "category": "multi_domain"
+  },
+  {
+    "id": "multi_010",
+    "query": "What is the hostel warden contact and when does the placement season begin?",
+    "expectedDomain": null,
+    "expectedDecision": "multi_answer",
+    "expectedDomains": [
+      "facilities",
+      "career_services"
+    ],
+    "category": "multi_domain"
+  },
+  {
+    "id": "followup_001",
+    "query": "What about the late fee?",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "follow_up",
+    "notes": "Assumes previous context about fees; borderline ambiguous standalone"
+  },
+  {
+    "id": "followup_002",
+    "query": "And when is the last date?",
+    "expectedDomain": null,
+    "expectedDecision": "clarification",
+    "category": "follow_up",
+    "notes": "No context; ambiguous 'last date'"
+  },
+  {
+    "id": "followup_003",
+    "query": "Can I do it online?",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "follow_up",
+    "notes": "Completely context-dependent; standalone out_of_scope"
+  },
+  {
+    "id": "followup_004",
+    "query": "What if I don't meet the deadline?",
+    "expectedDomain": null,
+    "expectedDecision": "clarification",
+    "category": "follow_up",
+    "notes": "Ambiguous deadline without prior context"
+  },
+  {
+    "id": "followup_005",
+    "query": "Is there a penalty for that?",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "follow_up",
+    "notes": "Referential pronoun; no domain signal alone"
+  },
+  {
+    "id": "followup_006",
+    "query": "Tell me more about the revaluation process",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "follow_up",
+    "notes": "Has explicit keyword despite follow-up phrasing"
+  },
+  {
+    "id": "followup_007",
+    "query": "How much does it cost?",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "follow_up",
+    "notes": "No domain signal; context-dependent"
+  },
+  {
+    "id": "followup_008",
+    "query": "What about the internship?",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "follow_up",
+    "notes": "Contains internship keyword"
+  },
+  {
+    "id": "greet_001",
+    "query": "Hi",
+    "expectedDomain": null,
+    "expectedDecision": "greeting",
+    "category": "easy",
+    "notes": "Simple greeting; should not route to a domain"
+  },
+  {
+    "id": "greet_002",
+    "query": "Hello there!",
+    "expectedDomain": null,
+    "expectedDecision": "greeting",
+    "category": "easy"
+  },
+  {
+    "id": "greet_003",
+    "query": "Thanks for the help",
+    "expectedDomain": null,
+    "expectedDecision": "greeting",
+    "category": "easy"
+  },
+  {
+    "id": "greet_004",
+    "query": "Good morning",
+    "expectedDomain": null,
+    "expectedDecision": "greeting",
+    "category": "easy"
+  },
+  {
+    "id": "para_001",
+    "query": "I want to know the last date to pay my semester dues",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Paraphrase of fees_001 — 'dues' instead of 'fee'"
+  },
+  {
+    "id": "para_002",
+    "query": "By what date must I clear my tuition balance?",
+    "expectedDomain": "fees",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Formal paraphrase of fee deadline query"
+  },
+  {
+    "id": "para_003",
+    "query": "Where can I see the exam schedule published by the university?",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Paraphrase of exam timetable query"
+  },
+  {
+    "id": "para_004",
+    "query": "My room in the hostel has a plumbing issue — who do I contact?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Paraphrase of maintenance + hostel query; warden reference"
+  },
+  {
+    "id": "para_005",
+    "query": "Which tech companies are coming for on-campus hiring?",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Paraphrase of recruit/placement query"
+  },
+  {
+    "id": "para_006",
+    "query": "I'm unable to get online — the university network seems broken",
+    "expectedDomain": "it",
+    "expectedDecision": "handoff",
+    "category": "easy",
+    "notes": "Paraphrase of network/internet IT query"
+  },
+  {
+    "id": "para_007",
+    "query": "My application for a room in the residential block was submitted — any update?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Paraphrase of hostel allotment; residential → hostel"
+  },
+  {
+    "id": "para_008",
+    "query": "Looking for details about the on-campus interview selection process",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Paraphrase of placement/recruitment"
+  },
+  {
+    "id": "para_009",
+    "query": "I want to contest the marks given to me for the internal assessment",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Paraphrase of revaluation query"
+  },
+  {
+    "id": "para_010",
+    "query": "The cafeteria was closed today — is that normal during exam season?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Canteen = cafeteria; facilities domain"
+  },
+  {
+    "id": "vague_001",
+    "query": "I have a complaint",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "ambiguous",
+    "notes": "No domain signal; out_of_scope is correct"
+  },
+  {
+    "id": "vague_002",
+    "query": "Something isn't working",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "ambiguous"
+  },
+  {
+    "id": "vague_003",
+    "query": "I'm not happy with the decision",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "ambiguous"
+  },
+  {
+    "id": "vague_004",
+    "query": "When is the university closed?",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "ambiguous",
+    "notes": "Could relate to facility closure but no specific domain trigger"
+  },
+  {
+    "id": "vague_005",
+    "query": "Can I speak to someone?",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "ambiguous",
+    "notes": "Handoff request with no domain"
+  },
+  {
+    "id": "vague_006",
+    "query": "I don't know what to do",
+    "expectedDomain": null,
+    "expectedDecision": "out_of_scope",
+    "category": "ambiguous"
+  },
+  {
+    "id": "vague_007",
+    "query": "fees or exam — I'm confused about both",
+    "expectedDomain": null,
+    "expectedDecision": "clarification",
+    "category": "ambiguous",
+    "notes": "Explicit mention of two domains; should clarify"
+  },
+  {
+    "id": "edge_001",
+    "query": "How do I calculate CGPA?",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "ambiguous",
+    "notes": "CGPA policy = examination; 'my CGPA' would be personal_data_unavailable"
+  },
+  {
+    "id": "edge_002",
+    "query": "What is the fee for revaluation?",
+    "expectedDomain": null,
+    "expectedDecision": "clarification",
+    "category": "ambiguous",
+    "notes": "Dual signal: fees keyword + revaluation/exam keyword → clarify"
+  },
+  {
+    "id": "edge_003",
+    "query": "Is the placement portal down?",
+    "expectedDomain": null,
+    "expectedDecision": "clarification",
+    "category": "ambiguous",
+    "notes": "IT issue (portal down) overlapping with career domain"
+  },
+  {
+    "id": "edge_004",
+    "query": "Can the hostel warden reset my room access card?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "ambiguous",
+    "notes": "Hostel + access card; facilities should dominate over IT"
+  },
+  {
+    "id": "edge_005",
+    "query": "My internship stipend is not processed — who handles this?",
+    "expectedDomain": null,
+    "expectedDecision": "clarification",
+    "category": "ambiguous",
+    "notes": "career_services + fees overlap for stipend/payment"
+  },
+  {
+    "id": "edge_006",
+    "query": "The exam hall projector is broken",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "ambiguous",
+    "notes": "Exam hall but maintenance issue → facilities"
+  },
+  {
+    "id": "edge_007",
+    "query": "I want to know about the scholarship exam",
+    "expectedDomain": null,
+    "expectedDecision": "clarification",
+    "category": "ambiguous",
+    "notes": "Both fees (scholarship) and examination keyword"
+  },
+  {
+    "id": "edge_008",
+    "query": "Where can I find the canteen menu?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Canteen → facilities"
+  },
+  {
+    "id": "edge_009",
+    "query": "Do I need to pay for the hostel maintenance service?",
+    "expectedDomain": null,
+    "expectedDecision": "clarification",
+    "category": "ambiguous",
+    "notes": "Hostel+maintenance (facilities) and payment (fees) dual signal"
+  },
+  {
+    "id": "edge_010",
+    "query": "How do I get a library book issued?",
+    "expectedDomain": "facilities",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Library is a facility"
+  },
+  {
+    "id": "edge_011",
+    "query": "I passed the placement drive, do I need to inform the academic department?",
+    "expectedDomain": "career_services",
+    "expectedDecision": "answer",
+    "category": "ambiguous",
+    "notes": "Mainly career; academic mention is context not a second domain intent"
+  },
+  {
+    "id": "edge_012",
+    "query": "Can the IT team help me access the placement portal?",
+    "expectedDomain": "it",
+    "expectedDecision": "handoff",
+    "category": "ambiguous",
+    "notes": "IT-access issue; portal = IT domain, not career"
+  },
+  {
+    "id": "edge_013",
+    "query": "I am a third year student, what exams should I be preparing for?",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Exam-related despite personal framing"
+  },
+  {
+    "id": "edge_014",
+    "query": "Will I be penalised if I miss the exam registration deadline?",
+    "expectedDomain": "examination",
+    "expectedDecision": "answer",
+    "category": "easy",
+    "notes": "Exam registration; deadline penalty → exam domain"
+  },
+  {
+    "id": "edge_015",
+    "query": "Is fee payment done through the same portal as the LMS?",
+    "expectedDomain": null,
+    "expectedDecision": "clarification",
+    "category": "ambiguous",
+    "notes": "IT portal (LMS) + fees payment dual signal"
+  }
+]
