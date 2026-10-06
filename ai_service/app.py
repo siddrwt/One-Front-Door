@@ -1,5 +1,6 @@
 import os
 import re
+import warnings
 import numpy as np
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -7,11 +8,14 @@ from typing import Optional, List, Dict, Any
 from huggingface_hub import hf_hub_download
 from transformers import AutoTokenizer
 import onnxruntime as ort
-
 from dotenv import load_dotenv
-load_dotenv()
 
-from fastapi import FastAPI
+# Suppress third-party future warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+
 app = FastAPI(title="Campus Assistant Router AI Service")
 
 MODEL_ID = os.getenv("MODEL_ID", "M1CR0W4V3/campus-assistant-router")
@@ -78,9 +82,18 @@ DOMAIN_KNOWLEDGE = {
 GREETING_PATTERN = re.compile(r"^(hi|hello|hey|thanks|thank you|good (morning|afternoon|evening))\b", re.I)
 JOINER_PATTERN = re.compile(r"\b(and|also|plus|then)\b|\?.*\?", re.I)
 
-print("Loading locally fine-tuned ONNX model and tokenizer...")
-model_path = os.path.join("onnx_model", "model.onnx")
-tokenizer = AutoTokenizer.from_pretrained("onnx_model")
+local_onnx_dir = os.path.join(BASE_DIR, "onnx_model")
+local_onnx_file = os.path.join(local_onnx_dir, "model.onnx")
+
+if os.path.exists(local_onnx_file):
+    print("Loading locally fine-tuned ONNX model and tokenizer from onnx_model...")
+    model_path = local_onnx_file
+    tokenizer = AutoTokenizer.from_pretrained(local_onnx_dir)
+else:
+    print(f"Local onnx_model not found. Loading model and tokenizer for {MODEL_ID} from Hugging Face...")
+    model_path = hf_hub_download(repo_id=MODEL_ID, filename="model.onnx", token=HF_TOKEN)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, token=HF_TOKEN)
+
 session = ort.InferenceSession(model_path)
 input_names = [inp.name for inp in session.get_inputs()]
 print("Model ready for inference!")
@@ -106,6 +119,7 @@ def predict_domain_scores(text_input: str) -> Dict[str, float]:
         return {}
 
 async def generate_gemini_response(query: str, contexts: List[str]) -> str:
+    global gemini_model
     if not gemini_model:
         return "\n\n".join(contexts)
     
@@ -119,8 +133,15 @@ async def generate_gemini_response(query: str, contexts: List[str]) -> str:
         response = await gemini_model.generate_content_async(prompt)
         return response.text
     except Exception as e:
-        print(f"Gemini API error: {e}")
-        return "\n\n".join(contexts)
+        print(f"Gemini API error: {e}. Trying fallback to gemini-1.5-flash...")
+        try:
+            fallback = genai.GenerativeModel('gemini-1.5-flash')
+            res = await fallback.generate_content_async(prompt)
+            gemini_model = fallback
+            return res.text
+        except Exception as e2:
+            print(f"Gemini fallback error: {e2}")
+            return "\n\n".join(contexts)
 
 class ChatRequest(BaseModel):
     query: Optional[str] = None

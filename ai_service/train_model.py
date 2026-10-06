@@ -12,13 +12,18 @@ Instructions for Google Colab:
 """
 
 import os
+import warnings
 import pandas as pd
+import torch
 from datasets import Dataset
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # 1. Load the dataset
 print("Loading dataset...")
-df = pd.read_csv("dataset.csv")
+dataset_path = os.path.join(BASE_DIR, "dataset.csv")
+df = pd.read_csv(dataset_path)
 
 # Create HuggingFace Dataset
 hg_dataset = Dataset.from_pandas(df)
@@ -58,13 +63,14 @@ eval_dataset = eval_dataset.map(tokenize_function, batched=True)
 
 # 4. Set up Trainer
 training_args = TrainingArguments(
-    output_dir="./model_output",
+    output_dir=os.path.join(BASE_DIR, "model_output"),
     eval_strategy="epoch",
     learning_rate=2e-5,
     per_device_train_batch_size=8,
     per_device_eval_batch_size=8,
     num_train_epochs=5,
     weight_decay=0.01,
+    dataloader_pin_memory=torch.cuda.is_available(),
 )
 
 trainer = Trainer(
@@ -80,8 +86,32 @@ trainer.train()
 
 # 6. Save Model
 print("Training complete! Saving model...")
-model.save_pretrained("./fine_tuned_campus_model")
-tokenizer.save_pretrained("./fine_tuned_campus_model")
+fine_tuned_dir = os.path.join(BASE_DIR, "fine_tuned_campus_model")
+model.save_pretrained(fine_tuned_dir)
+tokenizer.save_pretrained(fine_tuned_dir)
 
-print("Done! You can now convert this model to ONNX using optimum-cli:")
-print("!optimum-cli export onnx --model ./fine_tuned_campus_model --task text-classification ./onnx_model")
+# 7. Export to ONNX for local inference in app.py
+print("Exporting fine-tuned model to ONNX for local app.py inference...")
+onnx_dir = os.path.join(BASE_DIR, "onnx_model")
+os.makedirs(onnx_dir, exist_ok=True)
+dummy_input = tokenizer("Hello campus assistant", return_tensors="pt")
+model.eval()
+
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore")
+    torch.onnx.export(
+        model,
+        (dummy_input["input_ids"], dummy_input["attention_mask"]),
+        os.path.join(onnx_dir, "model.onnx"),
+        input_names=["input_ids", "attention_mask"],
+        output_names=["logits"],
+        dynamic_axes={
+            "input_ids": {0: "batch_size", 1: "sequence_length"},
+            "attention_mask": {0: "batch_size", 1: "sequence_length"},
+            "logits": {0: "batch_size"},
+        },
+        opset_version=14,
+        dynamo=False,
+    )
+tokenizer.save_pretrained(onnx_dir)
+print(f"Done! Local ONNX model and tokenizer are saved in {onnx_dir} and ready for app.py.")
