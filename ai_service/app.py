@@ -11,10 +11,22 @@ import onnxruntime as ort
 from dotenv import load_dotenv
 load_dotenv()
 
+from fastapi import FastAPI
 app = FastAPI(title="Campus Assistant Router AI Service")
 
 MODEL_ID = os.getenv("MODEL_ID", "M1CR0W4V3/campus-assistant-router")
 HF_TOKEN = os.getenv("AI_SERVICE_API_KEY") or os.getenv("HF_TOKEN")
+
+try:
+    import google.generativeai as genai
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+    if GEMINI_API_KEY:
+        genai.configure(api_key=GEMINI_API_KEY)
+        gemini_model = genai.GenerativeModel('gemini-2.5-flash')
+    else:
+        gemini_model = None
+except ImportError:
+    gemini_model = None
 
 LABEL_MAPPING = {
     "0": "Academics",
@@ -66,9 +78,9 @@ DOMAIN_KNOWLEDGE = {
 GREETING_PATTERN = re.compile(r"^(hi|hello|hey|thanks|thank you|good (morning|afternoon|evening))\b", re.I)
 JOINER_PATTERN = re.compile(r"\b(and|also|plus|then)\b|\?.*\?", re.I)
 
-print(f"Loading model and tokenizer for {MODEL_ID}...")
-model_path = hf_hub_download(repo_id=MODEL_ID, filename="model.onnx", token=HF_TOKEN)
-tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, token=HF_TOKEN)
+print("Loading locally fine-tuned ONNX model and tokenizer...")
+model_path = os.path.join("onnx_model", "model.onnx")
+tokenizer = AutoTokenizer.from_pretrained("onnx_model")
 session = ort.InferenceSession(model_path)
 input_names = [inp.name for inp in session.get_inputs()]
 print("Model ready for inference!")
@@ -92,6 +104,23 @@ def predict_domain_scores(text_input: str) -> Dict[str, float]:
     except Exception as e:
         print(f"ONNX inference error for '{text_input}': {e}")
         return {}
+
+async def generate_gemini_response(query: str, contexts: List[str]) -> str:
+    if not gemini_model:
+        return "\n\n".join(contexts)
+    
+    prompt = f"You are a helpful university campus assistant.\nA student asked: '{query}'\n\n"
+    prompt += "Use the following retrieved knowledge from our database to answer the student:\n"
+    for ctx in contexts:
+        prompt += f"- {ctx}\n"
+    prompt += "\nProvide a helpful, polite, and concise response using ONLY the information above. If the information doesn't fully address the question, answer as best as you can with what is provided."
+    
+    try:
+        response = await gemini_model.generate_content_async(prompt)
+        return response.text
+    except Exception as e:
+        print(f"Gemini API error: {e}")
+        return "\n\n".join(contexts)
 
 class ChatRequest(BaseModel):
     query: Optional[str] = None
@@ -134,7 +163,7 @@ TOPIC_RULES = [
     },
     {
         "domain": "Career Services",
-        "pattern": re.compile(r"\b(placements?|placement cell|internships?|career|resume|recruit\w*|jobs?|hiring|interview|off-campus)\b", re.I),
+        "pattern": re.compile(r"\b(placements?|placement cell|internships?|career|resume|recruit\w*|jobs?|hiring|interview|off-campus|drives?)\b", re.I),
         "personal_pattern": None,
         "personal_text": None,
         "default": DOMAIN_KNOWLEDGE["Career Services"]
@@ -162,7 +191,7 @@ TOPIC_RULES = [
     },
     {
         "domain": "Registration",
-        "pattern": re.compile(r"\b(registration|register|enrol\w*|course registration)\b", re.I),
+        "pattern": re.compile(r"\b(registration|register|enrol\w*|course registration|id card)\b", re.I),
         "personal_pattern": re.compile(r"\b(which|what)\s+semester\s+(am\s+i|i\s+am)\b|\bmy\s+semester\b", re.I),
         "personal_text": lambda ctx: f"You are in semester {ctx.get('semester')}." if ctx and ctx.get('semester') is not None else None,
         "default": DOMAIN_KNOWLEDGE["Registration"]
@@ -206,12 +235,13 @@ async def chat(payload: ChatRequest):
         chosen = payload.candidate_domains[0]
         label = "Fees & Finance" if chosen == "fees" else "Academics" if chosen == "examination" else "Facilities"
         ans_info = DOMAIN_KNOWLEDGE.get(label, DOMAIN_KNOWLEDGE["Fees & Finance"])
+        final_answer = await generate_gemini_response(text, [ans_info["answer"]])
         return {
             "decision": "answer",
             "domain": label,
             "confidence": 0.9,
-            "answer": ans_info["answer"],
-            "response": ans_info["answer"],
+            "answer": final_answer,
+            "response": final_answer,
             "sources": ans_info["sources"],
             "domains": [label]
         }
@@ -249,6 +279,9 @@ async def chat(payload: ChatRequest):
                 matched_answer = p_text
                 matched_sources = []
                 is_personal = True
+            else:
+                matched_answer = rule["default"]["answer"]
+                matched_sources = rule["default"]["sources"]
 
         if not matched_answer and rule["pattern"].search(q_lower):
             matched_answer = rule["default"]["answer"]
@@ -298,7 +331,8 @@ async def chat(payload: ChatRequest):
     )
 
     if len(matched_parts) >= 2 and has_joiner:
-        combined_text = "\n\n".join(a["answer"] for a in matched_parts)
+        contexts = [a["answer"] for a in matched_parts]
+        combined_text = await generate_gemini_response(text, contexts)
         top_score = max(p["confidence"] for p in matched_parts)
         return {
             "decision": "multi_answer",
@@ -315,12 +349,13 @@ async def chat(payload: ChatRequest):
     # If exactly 1 domain is matched
     if len(matched_parts) == 1:
         p = matched_parts[0]
+        final_answer = await generate_gemini_response(text, [p["answer"]])
         return {
             "decision": "answer",
             "domain": p["domain"],
             "confidence": p["confidence"],
-            "answer": p["answer"],
-            "response": p["answer"],
+            "answer": final_answer,
+            "response": final_answer,
             "sources": p["sources"],
             "used_student_context": p["used_student_context"],
             "domains": [p["domain"]],
@@ -350,7 +385,7 @@ async def chat(payload: ChatRequest):
     # Attach verified knowledge & sources if in domain
     if top_domain in DOMAIN_KNOWLEDGE:
         info = DOMAIN_KNOWLEDGE[top_domain]
-        ans = info["answer"]
+        ans = await generate_gemini_response(text, [info["answer"]])
         src = info["sources"]
         decision = "answer"
     elif top_domain == "General":

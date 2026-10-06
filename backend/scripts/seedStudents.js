@@ -49,10 +49,7 @@ const DEMO_STUDENTS = [
   },
 ];
 
-async function seed() {
-  await mongoose.connect(config.mongoUri);
-  console.log(`[seed] connected to ${sanitizeMongoUri(config.mongoUri)}`);
-
+async function seedDemoStudents() {
   for (const student of DEMO_STUDENTS) {
     const existing = await User.findOne({ email: student.email });
     if (existing) {
@@ -71,12 +68,21 @@ async function seed() {
     });
     console.log(`[seed] created ${student.name} (${student.email})`);
   }
+}
 
+async function seed() {
+  await mongoose.connect(config.mongoUri);
+  console.log(`[seed] connected to ${sanitizeMongoUri(config.mongoUri)}`);
+  await seedDemoStudents();
   await mongoose.disconnect();
   console.log('[seed] done');
 }
 
-seed().catch((err) => {
-  console.error('[seed] failed:', err);
-  process.exit(1);
-});
+if (require.main === module) {
+  seed().catch((err) => {
+    console.error('[seed] failed:', err);
+    process.exit(1);
+  });
+}
+
+module.exports = { seedDemoStudents };

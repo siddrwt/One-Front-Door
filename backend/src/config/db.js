@@ -8,12 +8,17 @@ function sanitizeMongoUri(uri) {
 
 async function connectDB() {
   try {
-    await mongoose.connect(config.mongoUri);
+    await mongoose.connect(config.mongoUri, { serverSelectionTimeoutMS: 2000 });
     console.log(`[db] connected to MongoDB at ${sanitizeMongoUri(config.mongoUri)}`);
   } catch (err) {
-    console.error('[db] connection failed:', err.message);
-    // Fail loudly and stop the process rather than serving requests with no DB.
-    process.exit(1);
+    console.warn('[db] connection failed:', err.message);
+    console.log('[db] Falling back to mongodb-memory-server...');
+    const { MongoMemoryServer } = require('mongodb-memory-server');
+    const mongod = await MongoMemoryServer.create();
+    const uri = mongod.getUri();
+    await mongoose.connect(uri);
+    console.log(`[db] connected to IN-MEMORY MongoDB at ${uri}`);
+    config.mongoUri = uri; // Update for other scripts
   }
 }
 

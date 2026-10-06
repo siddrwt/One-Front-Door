@@ -30,6 +30,14 @@ async function start() {
   await connectDB();
   await seedDefaultOrg();
 
+  const User = require('./models/User');
+  const count = await User.countDocuments();
+  if (count === 0) {
+    console.log('[server] Seeding demo students...');
+    const { seedDemoStudents } = require('../scripts/seedStudents');
+    await seedDemoStudents();
+  }
+
   app.listen(config.port, () => {
     console.log(`[server] listening on port ${config.port} (env: ${config.nodeEnv})`);
     console.log(`[server] USE_MOCK_AI=${config.useMockAi} — real AI service at ${config.aiServiceUrl}`);
