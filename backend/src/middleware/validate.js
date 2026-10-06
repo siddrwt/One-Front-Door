@@ -2,8 +2,9 @@ const Joi = require('joi');
 
 const chatRequestSchema = Joi.object({
   conversationId: Joi.string().allow(null, '').optional(),
-  message: Joi.string().min(1).max(2000).required(),
-});
+  message: Joi.string().min(1).max(2000).optional(),
+  query: Joi.string().min(1).max(2000).optional(),
+}).or('message', 'query');
 
 const ALLOWED_FEEDBACK_CATEGORIES = [
   'helpful',

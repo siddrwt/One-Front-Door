@@ -1,5 +1,5 @@
 const config = require('../config');
-const { OUR_DOMAINS, toDomain } = require('../config/domains');
+const { OUR_DOMAINS, toDomain, DEPARTMENTS } = require('../config/domains');
 const messages = require('../config/messages');
 const Turn = require('../models/Turn');
 const Organization = require('../models/Organization');
@@ -143,10 +143,14 @@ function toClientResponse(result, { conversationId, turnId, ticketId }) {
   const base = { conversationId, turnId, type: result.type };
   switch (result.type) {
     case 'answer': {
+      const dept = DEPARTMENTS[result.domain] || null;
       const resp = {
         ...base,
         answer: result.answer,
         domain: result.domain,
+        domains: result.domains || (result.domain ? [result.domain] : []),
+        department: dept,
+        routedTo: dept,
         routingScore: result.routingScore ?? null,
         routingMargin: result.routingMargin ?? null,
         sources: result.sources || [],
@@ -160,14 +164,19 @@ function toClientResponse(result, { conversationId, turnId, ticketId }) {
       return resp;
     }
     case 'multi_answer': {
+      const routedDepartments = (result.domains || []).map((d) => DEPARTMENTS[d] || d);
       const resp = {
         ...base,
         answer: result.answer,
         routingScore: result.routingScore ?? null,
         routingMargin: result.routingMargin ?? null,
+        department: routedDepartments.join(' & '),
+        routedTo: routedDepartments.join(' & '),
         answers: (result.answers || []).map((a) => {
           const item = {
             domain: a.domain,
+            department: DEPARTMENTS[a.domain] || null,
+            routedTo: DEPARTMENTS[a.domain] || null,
             answer: a.answer,
             routingScore: a.routingScore ?? null,
             routingMargin: a.routingMargin !== undefined ? a.routingMargin : (result.routingMargin ?? null),
@@ -214,7 +223,7 @@ function toClientResponse(result, { conversationId, turnId, ticketId }) {
 async function handleChat(req, res, next) {
   const startedAt = Date.now();
   try {
-    const { message } = req.body;
+    const message = req.body.message || req.body.query;
 
     // req.user comes from the verified JWT -- never from the request body, so
     // a student can't ask as someone else or read another student's record.

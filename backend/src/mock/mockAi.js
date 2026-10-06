@@ -35,23 +35,86 @@ const TOPICS = [
 
 // Questions about the student's own record, answerable from student_context.
 const PERSONAL = [
-  { label: 'Academics', re: /\bmy attendance\b/i, text: (c) => c.attendance_percent != null ? `Your attendance is ${c.attendance_percent}%.` : null },
-  { label: 'Fees & Finance', re: /\bmy (fees?\s+)?(balance|dues)\b|\bhow much (do )?i owe\b/i, text: (c) => c.fee_balance != null ? `Your fee balance is ${c.fee_balance}.` : null },
+  { label: 'Academics', re: /\b(my\s+attendance|attendance\s+percent\w*|what('?s|\s+is)\s+my\s+attendance)\b/i, text: (c) => c.attendance_percent != null ? `Your attendance is ${c.attendance_percent}%.` : null },
+  { label: 'Fees & Finance', re: /\bmy (fees?\s+)?(balance|dues)\b|\bhow much (do )?i owe\b|\bfee\s+balance\b/i, text: (c) => c.fee_balance != null ? `Your fee balance is ${c.fee_balance}.` : null },
   { label: 'Registration', re: /\b(which|what)\s+semester\s+(am\s+i|i\s+am)\b|\bwhat('?s|\s+is)\s+my\s+semester\b|\bmy\s+semester\s*\?*$/i, text: (c) => c.semester != null ? `You are in semester ${c.semester}.` : null },
-  { label: 'Housing', re: /\b(what('?s|\s+is)|which('?s|\s+is)|tell me|check)\s+(my\s+)?(hostel\s+)?room\b|\bmy (hostel\s+)?room (number|no\.?|allotment)\b|\bmy (hostel\s+)?room\?*$/i, text: (c) => c.hostel_room && c.hostel_room !== 'N/A' ? `Your hostel room is ${c.hostel_room}.` : 'No hostel room is recorded for you.' },
+  { label: 'Housing', re: /\b(what('?s|\s+is)|which('?s|\s+is)|tell me|check)\s+(my\s+)?(hostel\s+)?room\b|\b(which|what)\s+(hostel\s+)?room\s+(am\s+i|i\s+am)\b|\bmy (hostel\s+)?room (number|no\.?|allotment)\b|\bmy (hostel\s+)?room\?*$/i, text: (c) => c.hostel_room && c.hostel_room !== 'N/A' ? `Your hostel room is ${c.hostel_room}.` : 'No hostel room is recorded for you.' },
   { label: 'Academics', re: /\bmy (program|course|branch)\b/i, text: (c) => c.program ? `Your program is ${c.program}.` : null },
 ];
 
 const GREETING_RE = /^(hi|hello|hey|thanks|thank you|good (morning|afternoon|evening))\b/i;
 const JOINER_RE = /\b(and|also|plus|then)\b|\?.*\?/i;
 
-const ctxAnswer = (label, text) => ({
-  decision: 'answer', domain: label, confidence: 0.9, answer: text, sources: [], used_student_context: true,
-});
+function computeDynamicScore(query, domainLabel, isContext = false) {
+  const q = String(query || '').toLowerCase().trim();
+  let base = isContext ? 0.94 : 0.86;
 
-const topicAnswer = (t, extra = {}) => ({
-  decision: 'answer', domain: t.label, confidence: 0.9, answer: t.answer, sources: t.sources, ...extra,
-});
+  // High-value specificity tokens
+  if (/\b(revaluation|tuition|scholarship|attendance|hall ticket|allotment|placement drive|transcript|provisional|admit card)\b/i.test(q)) {
+    base += 0.05;
+  }
+  // Common policy tokens
+  if (/\b(semester|exam|fees|hostel|placement|internship|maintenance|cgpa|deadline)\b/i.test(q)) {
+    base += 0.03;
+  }
+  // Word count / query complexity factor
+  const words = q.split(/\s+/).filter(Boolean).length;
+  if (words >= 5) {
+    base += 0.02;
+  } else if (words <= 2) {
+    base -= 0.04;
+  }
+
+  // Deterministic variation based on character codes
+  let sum = 0;
+  for (let i = 0; i < q.length; i++) {
+    sum = (sum * 31 + q.charCodeAt(i)) & 0xffffff;
+  }
+  const variance = ((sum % 9) - 4) / 100;
+
+  return Math.min(0.98, Math.max(0.74, Number((base + variance).toFixed(2))));
+}
+
+function makeDomainScores(primaryDomain, score) {
+  const runnerUps = ['Academics', 'Fees & Finance', 'Facilities', 'Career Services', 'General']
+    .filter((d) => d !== primaryDomain);
+  const remaining = Number((1 - score).toFixed(4));
+  const s1 = Number((remaining * 0.6).toFixed(4));
+  const s2 = Number((remaining * 0.3).toFixed(4));
+  const s3 = Number((remaining * 0.1).toFixed(4));
+  return {
+    [primaryDomain]: score,
+    [runnerUps[0]]: s1,
+    [runnerUps[1]]: s2,
+    [runnerUps[2]]: s3,
+  };
+}
+
+const ctxAnswer = (label, text, query = '') => {
+  const score = computeDynamicScore(query, label, true);
+  return {
+    decision: 'answer',
+    domain: label,
+    confidence: score,
+    answer: text,
+    sources: [],
+    domain_scores: makeDomainScores(label, score),
+    used_student_context: true,
+  };
+};
+
+const topicAnswer = (t, extra = {}, query = '') => {
+  const score = computeDynamicScore(query, t.label, false);
+  return {
+    decision: 'answer',
+    domain: t.label,
+    confidence: score,
+    answer: t.answer,
+    sources: t.sources,
+    domain_scores: makeDomainScores(t.label, score),
+    ...extra,
+  };
+};
 
 function mockAiRaw(body) {
   const q = String(body.query || '').toLowerCase().trim();
@@ -65,13 +128,22 @@ function mockAiRaw(body) {
     };
   }
 
+  // Explicit human / advisor follow-up request
+  if (/\b(human|advisor|counselor|escalat\w*|speak (to|with) someone|talk to someone|connect me with staff|live support)\b/i.test(q)) {
+    return {
+      decision: 'handoff',
+      handoff_reason: 'human_requested',
+      message: "I understand. I've logged this inquiry and opened a support ticket for an advisor to follow up with you.",
+    };
+  }
+
   // 2. The student is answering a clarification: pick the chosen candidate.
   if (body.mode === 'clarification_answer' && Array.isArray(body.candidate_domains) && body.candidate_domains.length) {
     const byKeyword = TOPICS.find((t) => t.re.test(q));
     const wanted = byKeyword && body.candidate_domains.includes(byKeyword.key === 'hostel' ? 'facilities' : byKeyword.key === 'career' ? 'career_services' : byKeyword.key)
       ? byKeyword
       : TOPICS.find((t) => t.key === body.candidate_domains[0]) || TOPICS[0];
-    return topicAnswer(wanted);
+    return topicAnswer(wanted, {}, q);
   }
 
   // 3. Multi-domain query check (before single-topic shortcuts & clarification overrides)
@@ -81,10 +153,11 @@ function mockAiRaw(body) {
 
   if (distinctDomainKeys.length >= 2 && JOINER_RE.test(q)) {
     const uniqueHits = distinctDomainKeys.map((k) => hits.find((t) => canonical(t.key) === k));
+    const multiScore = computeDynamicScore(q, uniqueHits[0].label, false);
     return {
-      decision: 'multi_answer', domain: uniqueHits[0].label, confidence: 0.9,
-      domains: uniqueHits.map((t) => ({ domain: t.label, confidence: 0.85 })),
-      answers: uniqueHits.map((t) => ({ domain: t.label, answer: t.answer, confidence: 0.85, sources: t.sources })),
+      decision: 'multi_answer', domain: uniqueHits[0].label, confidence: multiScore,
+      domains: uniqueHits.map((t) => ({ domain: t.label, confidence: Number((multiScore - 0.05).toFixed(2)) })),
+      answers: uniqueHits.map((t) => ({ domain: t.label, answer: t.answer, confidence: Number((multiScore - 0.05).toFixed(2)), sources: t.sources })),
     };
   }
 
@@ -117,7 +190,7 @@ function mockAiRaw(body) {
     const lines = ctx ? personalHits.map((p) => p.text(ctx)).filter(Boolean) : [];
     if (!lines.length) return { decision: 'no_answer', domain: personalHits[0].label, confidence: 0.8, no_answer: true, sources: [] };
     const policy = TOPICS.find((t) => t.re.test(q));
-    return ctxAnswer(personalHits[0].label, [...lines, ...(policy ? [policy.answer] : [])].join(' '));
+    return ctxAnswer(personalHits[0].label, [...lines, ...(policy ? [policy.answer] : [])].join(' '), q);
   }
 
   // 6. A topic we have no documents for (demonstrates the no-answer path)
@@ -127,31 +200,31 @@ function mockAiRaw(body) {
 
   // 7. Disambiguation precedence for common compound mentions
   if (/\b(placements?|recruit\w*)\b/i.test(q) && /\bcgpa\b/i.test(q)) {
-    return topicAnswer(TOPICS.find((t) => t.key === 'career'));
+    return topicAnswer(TOPICS.find((t) => t.key === 'career'), {}, q);
   }
   if (/\b(projectors?|broken|lecture\s+hall)\b/i.test(q)) {
-    return topicAnswer(TOPICS.find((t) => t.key === 'facilities'));
+    return topicAnswer(TOPICS.find((t) => t.key === 'facilities'), {}, q);
   }
   if (/\b(canteen|cafeteria|mess)\b/i.test(q)) {
-    return topicAnswer(TOPICS.find((t) => t.key === 'facilities'));
+    return topicAnswer(TOPICS.find((t) => t.key === 'facilities'), {}, q);
   }
   if (/\bmock\s+interview\b/i.test(q)) {
-    return topicAnswer(TOPICS.find((t) => t.key === 'career'));
+    return topicAnswer(TOPICS.find((t) => t.key === 'career'), {}, q);
   }
   if (/\brecruit\w*|placements?|internships?\b/i.test(q) && /\bregister\b/i.test(q)) {
-    return topicAnswer(TOPICS.find((t) => t.key === 'career'));
+    return topicAnswer(TOPICS.find((t) => t.key === 'career'), {}, q);
   }
   if (/\bexam\w*\b/i.test(q) && /\bregist\w*\b/i.test(q)) {
-    return topicAnswer(TOPICS.find((t) => t.key === 'examination'));
+    return topicAnswer(TOPICS.find((t) => t.key === 'examination'), {}, q);
   }
   if (/\bplacement\s+drive\b/i.test(q) && /\bacademic\b/i.test(q)) {
-    return topicAnswer(TOPICS.find((t) => t.key === 'career'));
+    return topicAnswer(TOPICS.find((t) => t.key === 'career'), {}, q);
   }
 
   // 8. Policy topics
   if (hits.length >= 2) {
     if (distinctDomainKeys.length === 1) {
-      return topicAnswer(hits[0]);
+      return topicAnswer(hits[0], {}, q);
     }
     return {
       decision: 'clarification', domain: hits[0].label, confidence: 0.45,
@@ -159,7 +232,7 @@ function mockAiRaw(body) {
       message: 'Your question could be about more than one area — which did you mean?',
     };
   }
-  if (hits.length === 1) return topicAnswer(hits[0]);
+  if (hits.length === 1) return topicAnswer(hits[0], {}, q);
 
   if (/\bdeadline\b/i.test(q)) {
     return {

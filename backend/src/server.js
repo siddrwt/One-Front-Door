@@ -36,6 +36,14 @@ async function start() {
   });
 }
 
+process.on('uncaughtException', (err) => {
+  console.error('[server] Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[server] Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 start().catch((err) => {
   console.error('[server] failed to start:', err);
   process.exit(1);

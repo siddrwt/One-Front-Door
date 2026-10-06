@@ -7,12 +7,19 @@
 .env.production.local
 !.env.example
 
-# Node dependencies & logs
+# Node dependencies, build outputs & logs
 node_modules/
+dist/
+dist-ssr/
+build/
+*.local
+.vite/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+logs/
+*.log
 
 # Python & AI service artifacts
 __pycache__/
@@ -27,6 +34,7 @@ ENV/
 coverage/
 *.lcov
 .nyc_output
+reports/*.json
 
 # OS & Editor files
 .DS_Store

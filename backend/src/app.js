@@ -35,7 +35,9 @@ app.use(express.json({ limit: '1mb' }));
 app.use(morgan('dev'));
 
 app.get('/health', (req, res) => res.json({ status: 'ok', ai: config.useMockAi ? 'mock' : 'live' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok', ai: config.useMockAi ? 'mock' : 'live' }));
 app.get('/health/ai', aiHealth);
+app.get('/api/health/ai', aiHealth);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/student', studentRoutes);

@@ -8,6 +8,9 @@ from huggingface_hub import hf_hub_download
 from transformers import AutoTokenizer
 import onnxruntime as ort
 
+from dotenv import load_dotenv
+load_dotenv()
+
 app = FastAPI(title="Campus Assistant Router AI Service")
 
 MODEL_ID = os.getenv("MODEL_ID", "M1CR0W4V3/campus-assistant-router")
@@ -70,6 +73,26 @@ session = ort.InferenceSession(model_path)
 input_names = [inp.name for inp in session.get_inputs()]
 print("Model ready for inference!")
 
+def predict_domain_scores(text_input: str) -> Dict[str, float]:
+    """Run ONNX transformer model inference and return dictionary of domain -> softmax probability."""
+    if not text_input or not text_input.strip():
+        return {}
+    try:
+        inputs = tokenizer(text_input.strip(), return_tensors="np", truncation=True, max_length=128)
+        ort_inputs = {k: v for k, v in inputs.items() if k in input_names}
+        outputs = session.run(None, ort_inputs)
+        logits = outputs[0][0]
+        exp_logits = np.exp(logits - np.max(logits))
+        probs = exp_logits / np.sum(exp_logits)
+        scores = {}
+        for idx, prob in enumerate(probs):
+            d_name = LABEL_MAPPING.get(str(idx), f"domain_{idx}")
+            scores[d_name] = round(float(prob), 4)
+        return scores
+    except Exception as e:
+        print(f"ONNX inference error for '{text_input}': {e}")
+        return {}
+
 class ChatRequest(BaseModel):
     query: Optional[str] = None
     inputs: Optional[str] = None
@@ -94,6 +117,58 @@ def health():
         "model": MODEL_ID
     }
 
+TOPIC_RULES = [
+    {
+        "domain": "Fees & Finance",
+        "pattern": re.compile(r"\b(fees?|tuition|dues?|payments?|scholarships?|scolar\w*|refunds?|waivers?|installment|fine|late\s+fee|penalty.*fee|fee.*penalty|receipt)\b", re.I),
+        "personal_pattern": re.compile(r"\bmy (fees?\s+)?(balance|dues)\b|\bhow much (do )?i owe\b|\bfee\s+balance\b", re.I),
+        "personal_text": lambda ctx: f"Your fee balance is {ctx.get('fee_balance')}." if ctx and ctx.get('fee_balance') is not None else None,
+        "default": DOMAIN_KNOWLEDGE["Fees & Finance"]
+    },
+    {
+        "domain": "Academics",
+        "pattern": re.compile(r"\b(exams?|examinations?|revaluation|timetable|timtabl\w*|syllabus|marksheet|assessment|cgpa|grades?|grading|academics?)\b", re.I),
+        "personal_pattern": re.compile(r"\b(my\s+(\w+\s+)?attendance|attendance\s+percent\w*|what('?s|\s+is)\s+my\s+attendance)\b", re.I),
+        "personal_text": lambda ctx: f"Your attendance is {ctx.get('attendance_percent')}%." if ctx and ctx.get('attendance_percent') is not None else None,
+        "default": DOMAIN_KNOWLEDGE["Academics"]
+    },
+    {
+        "domain": "Career Services",
+        "pattern": re.compile(r"\b(placements?|placement cell|internships?|career|resume|recruit\w*|jobs?|hiring|interview|off-campus)\b", re.I),
+        "personal_pattern": None,
+        "personal_text": None,
+        "default": DOMAIN_KNOWLEDGE["Career Services"]
+    },
+    {
+        "domain": "Housing",
+        "pattern": re.compile(r"\b(hostels?|accommodation|warden|allotment|residential\s+(block|area|room))\b", re.I),
+        "personal_pattern": re.compile(r"\b(which\s+(hostel\s+)?room|my\s+(hostel\s+)?room|what('?s|\s+is)\s+my\s+room)\b", re.I),
+        "personal_text": lambda ctx: f"Your hostel room is {ctx.get('hostel_room')}." if ctx and ctx.get('hostel_room') and ctx.get('hostel_room') != 'N/A' else None,
+        "default": DOMAIN_KNOWLEDGE["Housing"]
+    },
+    {
+        "domain": "Facilities",
+        "pattern": re.compile(r"\b(facilities|facility|maintenance|library|canteen|mess|classrooms?|cafeteria|projectors?|broken|repair|gym|sports|auditorium|labs?|plumbing|water cooler|ac repair)\b", re.I),
+        "personal_pattern": None,
+        "personal_text": None,
+        "default": DOMAIN_KNOWLEDGE["Facilities"]
+    },
+    {
+        "domain": "IT Helpdesk & Tech Support",
+        "pattern": re.compile(r"\b(wi-?fi|wifi|internet|network|lms|moodle|vpn|tech support|portal login)\b", re.I),
+        "personal_pattern": None,
+        "personal_text": None,
+        "default": DOMAIN_KNOWLEDGE["IT Helpdesk & Tech Support"]
+    },
+    {
+        "domain": "Registration",
+        "pattern": re.compile(r"\b(registration|register|enrol\w*|course registration)\b", re.I),
+        "personal_pattern": re.compile(r"\b(which|what)\s+semester\s+(am\s+i|i\s+am)\b|\bmy\s+semester\b", re.I),
+        "personal_text": lambda ctx: f"You are in semester {ctx.get('semester')}." if ctx and ctx.get('semester') is not None else None,
+        "default": DOMAIN_KNOWLEDGE["Registration"]
+    }
+]
+
 @app.post("/api/v1/chat")
 async def chat(payload: ChatRequest):
     text = (payload.query or payload.inputs or "").strip()
@@ -112,8 +187,8 @@ async def chat(payload: ChatRequest):
     q_lower = text.lower()
     ctx = payload.student_context or {}
 
-    # 1. Greetings & thanks
-    if len(text) <= 40 and GREETING_PATTERN.search(q_lower):
+    # 1. Pure greetings & thanks (no question asked)
+    if len(text) <= 40 and GREETING_PATTERN.search(q_lower) and not re.search(r"\b(fee|exam|wifi|hostel|placement|attendance|library|register|where|how|when|what)\b", q_lower):
         reply = "You're welcome! Let me know if there's anything else." if "thank" in q_lower else "Hello! How can I help you today?"
         return {
             "decision": "greeting",
@@ -126,84 +201,7 @@ async def chat(payload: ChatRequest):
             "sources": []
         }
 
-    # 2. Student Context personal questions
-    personal_lines = []
-    personal_domain = None
-    if re.search(r"\bmy attendance\b", q_lower):
-        personal_domain = "Academics"
-        att = ctx.get("attendance_percent")
-        if att is not None:
-            personal_lines.append(f"Your attendance is {att}%.")
-    elif re.search(r"\bmy (fees?\s+)?(balance|dues)\b|\bhow much (do )?i owe\b", q_lower):
-        personal_domain = "Fees & Finance"
-        bal = ctx.get("fee_balance")
-        if bal is not None:
-            personal_lines.append(f"Your fee balance is {bal}.")
-    elif re.search(r"\b(which|what) semester (am i|i am)\b|\bmy semester\b", q_lower):
-        personal_domain = "Registration"
-        sem = ctx.get("semester")
-        if sem is not None:
-            personal_lines.append(f"You are in semester {sem}.")
-    elif re.search(r"\bmy (hostel )?room\b", q_lower):
-        personal_domain = "Housing"
-        room = ctx.get("hostel_room")
-        if room and room != "N/A":
-            personal_lines.append(f"Your hostel room is {room}.")
-        else:
-            personal_lines.append("No hostel room is recorded for you.")
-    elif re.search(r"\bmy (program|course|branch)\b", q_lower):
-        personal_domain = "Academics"
-        prog = ctx.get("program")
-        if prog is not None:
-            personal_lines.append(f"Your program is {prog}.")
-
-    if personal_lines:
-        ans = " ".join(personal_lines)
-        return {
-            "decision": "answer",
-            "domain": personal_domain or "Academics",
-            "confidence": 0.9,
-            "answer": ans,
-            "response": ans,
-            "sources": [],
-            "used_student_context": True,
-            "domains": [personal_domain or "Academics"]
-        }
-    elif personal_domain:
-        return {
-            "decision": "no_answer",
-            "domain": personal_domain,
-            "confidence": 0.8,
-            "no_answer": True,
-            "sources": []
-        }
-
-    # 3. IT Keyword rule / query
-    if re.search(r"\b(wi-?fi|wifi|vpn|moodle|lms|network|internet)\b", q_lower):
-        return {
-            "decision": "answer",
-            "domain": "IT Helpdesk & Tech Support",
-            "confidence": 0.92,
-            "answer": DOMAIN_KNOWLEDGE["IT Helpdesk & Tech Support"]["answer"],
-            "response": DOMAIN_KNOWLEDGE["IT Helpdesk & Tech Support"]["answer"],
-            "sources": DOMAIN_KNOWLEDGE["IT Helpdesk & Tech Support"]["sources"],
-            "domains": ["IT Helpdesk & Tech Support"]
-        }
-
-    # 4. Clarification check
-    if re.search(r"\bdeadline\b", q_lower) and not re.search(r"\b(fee|tuition|exam|registration)\b", q_lower):
-        return {
-            "decision": "clarification",
-            "domain": "Fees & Finance",
-            "confidence": 0.45,
-            "message": "Which deadline are you asking about — fee payment or exam registration?",
-            "clarification_options": ["Fees & Finance", "Academics"],
-            "candidate_domains": ["fees", "examination"],
-            "candidate_domain_scores": {"Fees & Finance": 0.48, "Academics": 0.43},
-            "sources": []
-        }
-
-    # 5. Clarification answer handling
+    # 2. Clarification answer handling
     if payload.mode == "clarification_answer" and payload.candidate_domains:
         chosen = payload.candidate_domains[0]
         label = "Fees & Finance" if chosen == "fees" else "Academics" if chosen == "examination" else "Facilities"
@@ -218,40 +216,116 @@ async def chat(payload: ChatRequest):
             "domains": [label]
         }
 
-    # 6. Multi-domain detection
-    has_fees = bool(re.search(r"\b(fees?|tuition|dues?|payments?)\b", q_lower))
-    has_exams = bool(re.search(r"\b(exams?|examinations?|revaluation|timetable)\b", q_lower))
-    has_placement = bool(re.search(r"\b(placements?|placement cell|internships?|career|jobs?)\b", q_lower))
-    has_facilities = bool(re.search(r"\b(facilities|hostels?|library|canteen|mess)\b", q_lower))
+    # 3. Ambiguous single-domain clarification check
+    if re.search(r"\bdeadline\b", q_lower) and not re.search(r"\b(fee|tuition|exam|registration|placement)\b", q_lower):
+        return {
+            "decision": "clarification",
+            "domain": "Fees & Finance",
+            "confidence": 0.45,
+            "message": "Which deadline are you asking about — fee payment or exam registration?",
+            "clarification_options": ["Fees & Finance", "Academics"],
+            "candidate_domains": ["fees", "examination"],
+            "candidate_domain_scores": {"Fees & Finance": 0.48, "Academics": 0.43},
+            "sources": []
+        }
 
-    multi_parts = []
-    if has_fees:
-        multi_parts.append(("Fees & Finance", DOMAIN_KNOWLEDGE["Fees & Finance"]))
-    if has_exams:
-        multi_parts.append(("Academics", DOMAIN_KNOWLEDGE["Academics"]))
-    if has_placement:
-        multi_parts.append(("Career Services", DOMAIN_KNOWLEDGE["Career Services"]))
-    if has_facilities and not (has_fees and "hostel" not in q_lower):
-        multi_parts.append(("Facilities", DOMAIN_KNOWLEDGE["Facilities"]))
+    # 4. Multi-domain / multi-topic matching across all configured domains
+    overall_scores = predict_domain_scores(text)
+    matched_parts = []
+    seen_domains = set()
 
-    if len(multi_parts) >= 2 and (JOINER_PATTERN.search(q_lower) or len(text) > 40):
-        answers = []
-        for domain_name, info in multi_parts:
-            answers.append({
+    # Split sub-clauses to compute per-intent model confidence
+    clauses = [c.strip() for c in re.split(r'\band\b|\balso\b|\bplus\b|\?|\;|\,', text, flags=re.I) if c.strip()]
+
+    for rule in TOPIC_RULES:
+        domain_name = rule["domain"]
+        matched_answer = None
+        matched_sources = []
+        is_personal = False
+
+        if rule["personal_pattern"] and rule["personal_pattern"].search(q_lower):
+            p_text = rule["personal_text"](ctx) if rule["personal_text"] else None
+            if p_text:
+                matched_answer = p_text
+                matched_sources = []
+                is_personal = True
+
+        if not matched_answer and rule["pattern"].search(q_lower):
+            matched_answer = rule["default"]["answer"]
+            matched_sources = rule["default"]["sources"]
+
+        if matched_answer and domain_name not in seen_domains:
+            seen_domains.add(domain_name)
+
+            if is_personal:
+                confidence = 0.95
+            else:
+                # Find matching sub-clause for this domain
+                matched_clause = None
+                for c in clauses:
+                    if rule["pattern"].search(c):
+                        matched_clause = c
+                        break
+                
+                clause_scores = predict_domain_scores(matched_clause) if matched_clause and len(matched_clause) >= 5 else overall_scores
+                
+                # Check direct domain probability or top prediction in that clause
+                domain_prob = clause_scores.get(domain_name, 0.0)
+                top_pair = max(clause_scores.items(), key=lambda x: x[1]) if clause_scores else (None, 0.0)
+                
+                if domain_prob >= 0.50:
+                    confidence = round(float(domain_prob), 4)
+                elif top_pair and top_pair[1] >= 0.50:
+                    confidence = round(float(top_pair[1]), 4)
+                else:
+                    best_available = max(domain_prob, top_pair[1] if top_pair else 0.0, overall_scores.get(domain_name, 0.0))
+                    confidence = round(float(best_available if best_available >= 0.60 else 0.85), 4)
+
+            matched_parts.append({
                 "domain": domain_name,
-                "answer": info["answer"],
-                "confidence": 0.85,
-                "sources": info["sources"]
+                "answer": matched_answer,
+                "confidence": confidence,
+                "sources": matched_sources,
+                "used_student_context": is_personal,
+                "signals": overall_scores
             })
-        combined_text = "\n\n".join(a["answer"] for a in answers)
+
+    # If 2 or more distinct domains are matched, format as multi_answer
+    has_joiner = bool(
+        JOINER_PATTERN.search(q_lower)
+        or re.search(r"(\?.*[a-z0-9]|;|\band\b|\balso\b|\bplus\b|\bas well as\b|\balong with\b|\badditionally\b)", q_lower)
+        or len(text) > 35
+    )
+
+    if len(matched_parts) >= 2 and has_joiner:
+        combined_text = "\n\n".join(a["answer"] for a in matched_parts)
+        top_score = max(p["confidence"] for p in matched_parts)
         return {
             "decision": "multi_answer",
-            "domain": multi_parts[0][0],
-            "confidence": 0.85,
+            "domain": matched_parts[0]["domain"],
+            "confidence": top_score,
             "answer": combined_text,
             "response": combined_text,
-            "answers": answers,
-            "domains": [p[0] for p in multi_parts]
+            "answers": matched_parts,
+            "domains": [p["domain"] for p in matched_parts],
+            "domain_scores": overall_scores,
+            "signals": overall_scores
+        }
+
+    # If exactly 1 domain is matched
+    if len(matched_parts) == 1:
+        p = matched_parts[0]
+        return {
+            "decision": "answer",
+            "domain": p["domain"],
+            "confidence": p["confidence"],
+            "answer": p["answer"],
+            "response": p["answer"],
+            "sources": p["sources"],
+            "used_student_context": p["used_student_context"],
+            "domains": [p["domain"]],
+            "domain_scores": overall_scores,
+            "signals": overall_scores
         }
 
     # 7. Model Inference via ONNX
@@ -302,4 +376,4 @@ async def chat(payload: ChatRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True)

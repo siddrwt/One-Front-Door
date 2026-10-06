@@ -23,10 +23,16 @@ async function signup({ studentId, name, email, password, orgId }) {
   return issueToken(user);
 }
 
-async function login({ email, password }) {
-  const user = await User.findOne({ email });
+async function login({ email, studentId, identifier, password }) {
+  const query = email
+    ? { email }
+    : studentId
+    ? { studentId }
+    : { $or: [{ email: identifier }, { studentId: identifier }] };
+
+  const user = await User.findOne(query);
   if (!user) {
-    const err = new Error('Invalid email or password.');
+    const err = new Error('Invalid student ID/email or password.');
     err.status = 401;
     throw err;
   }

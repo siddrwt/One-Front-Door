@@ -9,9 +9,11 @@ const signupSchema = Joi.object({
 });
 
 const loginSchema = Joi.object({
-  email: Joi.string().email().required(),
+  email: Joi.string().email().optional(),
+  studentId: Joi.string().optional(),
+  identifier: Joi.string().optional(),
   password: Joi.string().required(),
-});
+}).or('email', 'studentId', 'identifier');
 
 function validateBody(schema) {
   return (req, res, next) => {
