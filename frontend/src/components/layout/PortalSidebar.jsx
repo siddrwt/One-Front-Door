@@ -266,8 +266,8 @@ export default function PortalSidebar({ isOpen, onClose, onSelectUpcomingModule 
               {!isCollapsed && (
                 <span
                   style={{
-                    backgroundColor: isChatActive ? '#ffffff' : '#c2410c',
-                    color: isChatActive ? '#c2410c' : '#ffffff',
+                    backgroundColor: isChatActive ? '#ffffff' : '#ffffffff',
+                    color: isChatActive ? '#ffffffff' : '#ffffff',
                     fontSize: '0.74rem',
                     fontWeight: 800,
                     width: '20px',
@@ -278,7 +278,7 @@ export default function PortalSidebar({ isOpen, onClose, onSelectUpcomingModule 
                     justifyContent: 'center',
                   }}
                 >
-                  2
+                  
                 </span>
               )}
             </NavLink>

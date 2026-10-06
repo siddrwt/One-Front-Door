@@ -439,7 +439,6 @@ export default function ChatPage() {
                   backgroundColor: '#10b981',
                 }}
               />
-              <span>Backend Live (:5000)</span>
             </span>
           </div>
 
@@ -575,9 +574,9 @@ export default function ChatPage() {
                     One Front Door
                   </span>
                 </div>
-                <div style={{ fontSize: '0.72rem', color: '#a8a29e', marginTop: '1px' }}>
+                {/* <div style={{ fontSize: '0.72rem', color: '#a8a29e', marginTop: '1px' }}>
                   Authenticated: {studentName} • <span style={{ color: '#4ade80' }}>● Backend Live (:5000)</span>
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -592,7 +591,6 @@ export default function ChatPage() {
                   color: '#e7e5e4',
                 }}
               >
-                Evaluation
               </span>
 
               <button
@@ -924,7 +922,7 @@ export default function ChatPage() {
           </div>
 
           {/* Quick Try Asking Row */}
-          <div
+          {/* <div
             style={{
               backgroundColor: '#fffdfa',
               borderLeft: '1px solid #e2e8f0',
@@ -970,7 +968,7 @@ export default function ChatPage() {
                 </button>
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* Bottom Composer Bar */}
           <div
