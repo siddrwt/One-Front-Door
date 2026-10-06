@@ -139,8 +139,13 @@ function normalizeAiResponse(raw, { enabledDomains = OUR_DOMAINS, requireSources
       replyKind: 'no_answer', signals, ...meta,
     });
   const domainsOf = (primary) => {
-    const fromList = uniq(scores.map((s) => toDomain(s.label)).filter(usable));
-    return fromList.length ? fromList : primary ? [primary] : [];
+    if (Array.isArray(raw.domains) && raw.domains.length > 0) {
+      const explicit = uniq(
+        raw.domains.map((d) => toDomain(typeof d === 'string' ? d : d.domain ?? d.label)).filter(usable)
+      );
+      if (explicit.length) return explicit;
+    }
+    return primary ? [primary] : [];
   };
 
   switch (decision) {

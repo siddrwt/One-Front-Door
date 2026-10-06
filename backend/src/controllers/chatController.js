@@ -148,7 +148,7 @@ function toClientResponse(result, { conversationId, turnId, ticketId }) {
         ...base,
         answer: result.answer,
         domain: result.domain,
-        domains: result.domains || (result.domain ? [result.domain] : []),
+        domains: result.domain ? [result.domain] : (result.domains?.length ? [result.domains[0]] : []),
         department: dept,
         routedTo: dept,
         routingScore: result.routingScore ?? null,

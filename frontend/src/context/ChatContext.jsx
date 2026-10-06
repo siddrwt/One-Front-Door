@@ -50,7 +50,7 @@ export function ChatProvider({ children }) {
         type: res.type || 'answer',
         content: res.answer || res.message || res.response,
         domain: res.domain || (res.domains && res.domains[0]) || 'general',
-        domains: res.domains || (res.domain ? [res.domain] : []),
+        domains: res.type === 'multi_answer' ? (res.domains || []) : (res.domain ? [res.domain] : []),
         answers: res.answers || [],
         confidence: res.routingScore ?? res.confidence ?? null,
         sources: res.sources || [],

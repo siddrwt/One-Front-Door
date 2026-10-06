@@ -26,10 +26,10 @@ export default function MessageItem({ message }) {
     }
   };
 
-  const isMultiAnswer = !isUser && Array.isArray(message.answers) && message.answers.length > 1;
-  const displayDomains = message.domains && message.domains.length > 0
-    ? message.domains
-    : message.domain ? [message.domain] : [];
+  const isMultiAnswer = !isUser && (message.type === 'multi_answer' || (Array.isArray(message.answers) && message.answers.length > 1));
+  const displayDomains = isMultiAnswer
+    ? (message.domains && message.domains.length > 0 ? message.domains : (message.domain ? [message.domain] : []))
+    : (message.domain ? [message.domain] : (message.domains && message.domains.length > 0 ? [message.domains[0]] : []));
 
   const routedPath = message.routedTo || (
     displayDomains.length > 0
