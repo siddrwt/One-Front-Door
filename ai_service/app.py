@@ -410,9 +410,14 @@ async def chat(payload: ChatRequest):
         src = info["sources"]
         decision = "answer"
     elif top_domain == "General":
-        ans = "Hello! How can I help you today?"
-        src = []
-        decision = "greeting"
+        if GREETING_PATTERN.search(q_lower):
+            ans = "Hello! How can I help you today?"
+            src = []
+            decision = "greeting"
+        else:
+            ans = "That is outside what I can help with. I can answer questions about fees, examinations, IT, facilities and career services — for anything else, please contact the relevant university office directly."
+            src = []
+            decision = "out_of_scope"
     else:
         # Out of scope domain (Student Life, Admissions, Disciplinary, etc.)
         ans = f"Inquiries regarding {top_domain} are handled by the respective university office."

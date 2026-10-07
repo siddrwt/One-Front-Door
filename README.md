@@ -1,4 +1,4 @@
-# One Front Door (Campus Assistant)
+# One Front Door (Campus Assistant) - v2.0
 
 A multi-domain campus assistant and intelligent query router designed to streamline student support across university administrative departments and portals (such as CAMU).
 
@@ -6,41 +6,41 @@ A multi-domain campus assistant and intelligent query router designed to streaml
 
 ## 🌟 Key Capabilities
 
+- **Interactive Routing Visualizer (New in v2)**: A dedicated live telemetry panel that illustrates the internal routing decision path via a graphical node flow diagram, continuous softmax probability distribution meters across all 5 domains, and cited RAG policy evidence.
 - **Multi-Domain Intent Decomposition**: Automatically partitions complex, multi-intent inquiries (e.g. *"What is the fee deadline and where is the placement cell?"*) and routes each intent to its corresponding university department with verified citations.
-- **Dynamic Neural Classification**: Powered by an ONNX-optimized transformer classifier (`M1CR0W4V3/campus-assistant-router`) to generate continuous softmax confidence scores and explainability signals across administrative domains.
+- **Dynamic Neural Classification**: Powered by an ONNX-optimized transformer classifier (`M1CR0W4V3/campus-assistant-router`) to generate real-time softmax confidence scores and explainability signals across administrative domains.
 - **Grounded Student Context**: Securely retrieves authenticated student record data (such as live attendance %, hostel room allotment, and fee balance) without exposing private information across sessions.
-- **Guardrails & Escalation Ticketing**: Out-of-scope questions or critical IT failures automatically generate support tickets in MongoDB with unique tracking IDs.
-- **Explainable Routing Mesh**: Transparently visualizes confidence scores, department routing targets, and source documents directly in the student chat interface.
+- **Robust Guardrails & Automated Ticketing**: Out-of-scope inquiries and critical IT technical issues (e.g. Wi-Fi down, login failures) automatically generate tracked support tickets in MongoDB with unique reference IDs.
+- **Private Data Protection**: Proactively intercepts inquiries regarding unheld student records (e.g. marks, results, CGPA) and guides students to the official CAMU records portal.
 
 ---
 
 ## 🏛️ System Architecture
 
 ```text
-                        ┌───────────────────────────────┐
-                        │     React Frontend (Vite)     │
-                        │    CAMU Student Chat Portal   │
-                        └──────────────┬────────────────┘
-                                       │ HTTP / JSON
-                                       ▼
-                        ┌───────────────────────────────┐
-                        │    Node.js Express Backend    │
-                        │   JWT Auth & Rate Limiting    │
-                        │   Context Service & Tickets   │
-                        │   MongoDB Database Storage    │
-                        └──────────────┬────────────────┘
-                                       │ HTTP POST (/api/v1/chat)
-                                       ▼
-                        ┌───────────────────────────────┐
-                        │    Python AI Service (FastAPI)│
-                        │    ONNX Runtime Transformer   │
-                        │   Multi-Intent Decomposition  │
-                        └───────────────────────────────┘
+                        ┌────────────────────────────────────────────────────────┐
+                        │                 React Frontend (Vite)                  │
+                        │   CAMU Student Portal & Visual Route Inspector         │
+                        └──────────────────────────┬─────────────────────────────┘
+                                                   │ HTTP / JSON
+                                                   ▼
+                        ┌────────────────────────────────────────────────────────┐
+                        │                Node.js Express Backend                 │
+                        │   JWT Auth • Context Injection • Guardrails & Tickets   │
+                        │   MongoDB Database Storage & Status Management         │
+                        └──────────────────────────┬─────────────────────────────┘
+                                                   │ HTTP POST (/api/v1/chat)
+                                                   ▼
+                        ┌────────────────────────────────────────────────────────┐
+                        │               Python AI Service (FastAPI)              │
+                        │   ONNX Runtime Transformer • Intent Decomposition      │
+                        │   Grounded Domain Knowledge & Confidence Scoring       │
+                        └────────────────────────────────────────────────────────┘
 ```
 
 1. **Frontend (`/frontend`)**:
-   - Built with **React 18**, **Vite**, and **Vanilla CSS**.
-   - Features responsive chat threads, multi-domain decomposed response cards, quick query chips, and ticket history.
+   - Built with **React**, **Vite**, and **Vanilla CSS**.
+   - Features responsive chat threads, dedicated **Visual Routing Inspector** side panel with live probability meters, multi-domain decomposed response cards, and support ticket management.
 2. **Backend (`/backend`)**:
    - Built with **Node.js**, **Express**, and **MongoDB (Mongoose)**.
    - Manages JWT student authentication, multi-turn conversation memory, IT pre-routing guardrails, feedback collection, and administrative ticketing.
@@ -101,7 +101,7 @@ npm run dev
 
 ---
 
-### Step 3: Start the Frontend (Port 3000)
+### Step 3: Start the Frontend
 
 ```powershell
 cd frontend
@@ -112,7 +112,7 @@ npm install
 # Start Vite dev server
 npm run dev
 ```
-*Open your browser and navigate to: `http://localhost:3000`*
+*Open your browser and navigate to: `http://localhost:5173` (or the port indicated by Vite)*
 
 ---
 
@@ -127,25 +127,34 @@ Pre-seeded accounts available for testing student-context queries:
 
 ---
 
-## 🧪 Sample Inquiries to Try
+## 🧪 Inquiries to Try & Routing Behaviors
 
-### 1. Single-Domain Policy Queries
+### 1. Single-Domain Policy Inquiries
 - *"When is the semester tuition fee payment deadline?"* $\rightarrow$ **The Fees Department**
-- *"Where can I download my examination hall ticket?"* $\rightarrow$ **The Examination Department**
-- *"How can I book a discussion room in the campus library?"* $\rightarrow$ **Estate & Facilities**
+- *"What is the procedure and deadline to apply for revaluation?"* $\rightarrow$ **The Examination Department**
+- *"How do I submit a maintenance request for classroom facilities?"* $\rightarrow$ **Estate & Facilities**
+- *"Where is the placement cell and how do I register for campus drives?"* $\rightarrow$ **The Placement Cell**
 
 ### 2. Multi-Domain Inquiries (Compound Questions)
-- *"What is the fee deadline and where is the placement cell?"* $\rightarrow$ Routes simultaneously to **The Fees Department** & **The Placement Cell**.
-- *"When is the tuition fee due and how do I connect to campus wifi?"* $\rightarrow$ Routes to **The Fees Department** & **The IT Department**.
-- *"Where do I report a hostel room issue and how do I apply for exam revaluation?"* $\rightarrow$ Routes to **Estate & Facilities** & **The Examination Department**.
+- *"What is the fee deadline and where is the placement cell?"* $\rightarrow$ Decomposes into **The Fees Department** & **The Placement Cell**.
+- *"When is the semester fee due and when do exams start?"* $\rightarrow$ Decomposes into **The Fees Department** & **The Examination Department**.
+- *"Where is the campus library and how do I register for placements?"* $\rightarrow$ Decomposes into **Estate & Facilities** & **The Placement Cell**.
 
 ### 3. Student-Context Grounded Questions
-- *"What is my attendance?"* $\rightarrow$ Returns authenticated student attendance % from student record.
-- *"What is my room number?"* $\rightarrow$ Returns allotted hostel room (`C-204`).
-- *"What is my attendance and when is the fee due?"* $\rightarrow$ Decomposes personal record data with university fee policy.
+- *"What is my attendance?"* $\rightarrow$ Returns authenticated student attendance % (e.g. `87%`).
+- *"What is my fee balance?"* $\rightarrow$ Returns authenticated student fee balance (e.g. `Nil balance`).
+- *"Which hostel room is allotted to me?"* $\rightarrow$ Returns allotted hostel room (`C-204`).
 
-### 4. Human Handoff & Escalations
-- *"Can I bring an exotic pet to stay in the campus hostel?"* $\rightarrow$ Recognized as out of scope; creates an escalated support ticket with a reference ID.
+### 4. IT Support & Automated Ticket Creation
+- *"My campus Wi-Fi is not connecting in hostel block C"* $\rightarrow$ Detects IT support requirement; automatically generates a tracked support ticket in MongoDB.
+- *"Unable to log in to student LMS portal, getting password error"* $\rightarrow$ Creates an escalated IT support ticket.
+
+### 5. Private Data Guardrails
+- *"What are my exam marks and grades?"* $\rightarrow$ Intercepted by personal data guardrail; directs student to check CAMU portal directly.
+
+### 6. Out-of-Scope Questions
+- *"Tell me about student clubs and societies"* $\rightarrow$ Out-of-scope guidance pointing to relevant university administration.
+- *"What is the disciplinary action for ragging?"* $\rightarrow$ Out-of-scope guidance.
 
 ---
 

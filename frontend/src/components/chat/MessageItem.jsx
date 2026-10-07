@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import DomainBadge from './DomainBadge';
-import { ThumbsUp, ThumbsDown, Check, Sparkles, Building } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Check, Sparkles, Building, GitBranch } from 'lucide-react';
 import { chatService } from '../../services/chatService';
 import { getDomainConfig } from '../../utils/constants';
 
-export default function MessageItem({ message }) {
+export default function MessageItem({ message, onInspectMessage, isSelected }) {
   const isUser = message.role === 'user';
   const [feedback, setFeedback] = useState(null);
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
@@ -77,12 +77,13 @@ export default function MessageItem({ message }) {
           style={{
             backgroundColor: isUser ? 'var(--primary)' : 'var(--bg-card)',
             color: isUser ? '#ffffff' : 'var(--text-main)',
-            border: isUser ? 'none' : '1px solid var(--border-subtle)',
+            border: isUser ? 'none' : isSelected ? '1.5px solid #ea580c' : '1px solid var(--border-subtle)',
             borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
             padding: '14px 18px',
-            boxShadow: 'var(--shadow-sm)',
+            boxShadow: isSelected ? '0 0 14px rgba(234, 88, 12, 0.16)' : 'var(--shadow-sm)',
             lineHeight: 1.6,
             wordBreak: 'break-word',
+            transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
           }}
         >
           {!isUser && (displayDomains.length > 0 || routedPath) && (
@@ -113,6 +114,30 @@ export default function MessageItem({ message }) {
                   <Building size={12} /> Routed: {routedPath}
                 </span>
               )}
+
+              <button
+                type="button"
+                onClick={() => onInspectMessage?.(message)}
+                style={{
+                  marginLeft: 'auto',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  color: isSelected ? '#ea580c' : '#64748b',
+                  backgroundColor: isSelected ? '#fff7ed' : '#f8fafc',
+                  border: `1px solid ${isSelected ? '#fed7aa' : '#e2e8f0'}`,
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+                title="Inspect routing telemetry and flow map"
+              >
+                <GitBranch size={12} color={isSelected ? '#ea580c' : '#64748b'} />
+                <span>{isSelected ? 'Route Visible' : 'Inspect Route'}</span>
+              </button>
             </div>
           )}
 

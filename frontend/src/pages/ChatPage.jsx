@@ -6,6 +6,7 @@ import { ticketService } from '../services/ticketService';
 import studentAvatar from '../assets/student_avatar.jpg';
 import portalLogo from '../assets/portal_logo.png';
 import MessageItem from '../components/chat/MessageItem';
+import RoutingInspector from '../components/chat/RoutingInspector';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import {
   ArrowLeft,
@@ -26,6 +27,7 @@ import {
   Clock,
   ExternalLink,
   ShieldCheck,
+  GitBranch,
 } from 'lucide-react';
 
 export default function ChatPage() {
@@ -41,10 +43,26 @@ export default function ChatPage() {
   const [inputText, setInputText] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isWhyAnswerOpen, setIsWhyAnswerOpen] = useState(false);
+  const [isInspectorOpen, setIsInspectorOpen] = useState(true);
+  const [selectedMessageId, setSelectedMessageId] = useState(null);
   const [badgeBump, setBadgeBump] = useState(false);
   const prevCountRef = useRef(0);
   const messagesEndRef = useRef(null);
   const initialSentRef = useRef(false);
+
+  const botTurns = messages.filter((m) => m.role === 'assistant');
+  const activeMessage = selectedMessageId
+    ? messages.find((m) => m.id === selectedMessageId) || botTurns[botTurns.length - 1]
+    : botTurns[botTurns.length - 1];
+
+  const activeUserQuery = (() => {
+    if (!activeMessage) return '';
+    const activeIdx = messages.findIndex((m) => m.id === activeMessage.id);
+    if (activeIdx > 0 && messages[activeIdx - 1]?.role === 'user') {
+      return messages[activeIdx - 1].content;
+    }
+    return '';
+  })();
 
   const filteredTickets = tickets.filter((t) => {
     if (ticketStatusFilter === 'ALL') return true;
@@ -502,20 +520,31 @@ export default function ChatPage() {
           </div>
         </header>
 
-        {/* Chat Content Body */}
+        {/* Body Workspace Row: Chat on Left, Routing Inspector on Right */}
         <div
           style={{
             flex: 1,
             display: 'flex',
-            flexDirection: 'column',
-            padding: '16px 24px',
+            flexDirection: 'row',
             overflow: 'hidden',
-            maxWidth: isFullscreen ? '100%' : '1100px',
-            margin: '0 auto',
-            width: '100%',
-            boxSizing: 'border-box',
+            minHeight: 0,
           }}
         >
+          {/* Chat Content Body */}
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '16px 20px',
+              overflow: 'hidden',
+              maxWidth: isInspectorOpen ? '100%' : isFullscreen ? '100%' : '1100px',
+              margin: '0 auto',
+              width: '100%',
+              boxSizing: 'border-box',
+              minWidth: 0,
+            }}
+          >
           {/* Dark LUNA Header Banner */}
           <div
             style={{
@@ -581,17 +610,27 @@ export default function ChatPage() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span
+              <button
+                onClick={() => setIsInspectorOpen(!isInspectorOpen)}
                 style={{
-                  fontSize: '0.72rem',
-                  fontWeight: 600,
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  color: '#ffffff',
                   padding: '4px 10px',
                   borderRadius: '6px',
-                  color: '#e7e5e4',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  backgroundColor: isInspectorOpen ? '#ea580c' : 'rgba(255, 255, 255, 0.12)',
+                  border: `1px solid ${isInspectorOpen ? '#f97316' : 'rgba(255, 255, 255, 0.2)'}`,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
                 }}
+                title={isInspectorOpen ? 'Hide Visual Route Inspector' : 'Open Visual Route Inspector'}
               >
-              </span>
+                <GitBranch size={13} />
+                <span>{isInspectorOpen ? 'Router Visuals ON' : 'Show Route Visuals'}</span>
+              </button>
 
               <button
                 onClick={() => setIsFullscreen(!isFullscreen)}
@@ -760,7 +799,7 @@ export default function ChatPage() {
                               backgroundColor: '#ea580c',
                             }}
                           />
-                          LUNA AI Orchestrator
+                          LUNA AI 
                         </span>
                         <span
                           style={{
@@ -776,7 +815,7 @@ export default function ChatPage() {
                         </span>
                       </div>
 
-                      <span
+                      {/* <span
                         style={{
                           fontSize: '0.74rem',
                           fontWeight: 700,
@@ -792,7 +831,7 @@ export default function ChatPage() {
                       >
                         <ShieldCheck size={12} />
                         100% confidence
-                      </span>
+                      </span> */}
                     </div>
 
                     {/* Message Body */}
@@ -844,7 +883,7 @@ export default function ChatPage() {
                         }}
                       >
                         <CheckCircle2 size={14} />
-                        <span>One Front Door Architecture (Real-time Router v2.4)</span>
+                        <span>One Front Door Architecture (Real-time Router)</span>
                       </div>
                     </div>
 
@@ -879,7 +918,7 @@ export default function ChatPage() {
                         }}
                       >
                         <div>
-                          <strong>Router Model:</strong> campus-rag-classifier-v2.4
+                          <strong>Router Model:</strong> campus-rag-classifier
                         </div>
                         <div>
                           <strong>Evaluated Domains:</strong> Finance (0.24), Exam (0.18), IT (0.12), Facilities (0.08)
@@ -900,7 +939,17 @@ export default function ChatPage() {
 
             {/* Conversation Messages */}
             {messages.length > 1 &&
-              messages.map((msg) => <MessageItem key={msg.id} message={msg} />)}
+              messages.map((msg) => (
+                <MessageItem
+                  key={msg.id}
+                  message={msg}
+                  isSelected={activeMessage?.id === msg.id}
+                  onInspectMessage={(m) => {
+                    setSelectedMessageId(m.id);
+                    setIsInspectorOpen(true);
+                  }}
+                />
+              ))}
 
             {isLoading && (
               <div
@@ -1029,7 +1078,20 @@ export default function ChatPage() {
             </button>
           </div>
         </div>
-      </main>
+
+        {/* Right Side: Routing Inspector Panel */}
+        {isInspectorOpen && (
+          <RoutingInspector
+            activeMessage={activeMessage}
+            userQuery={activeUserQuery}
+            allTurns={botTurns}
+            selectedTurnIndex={botTurns.findIndex((t) => t.id === activeMessage?.id)}
+            onSelectTurn={(idx) => setSelectedMessageId(botTurns[idx]?.id)}
+            onClose={() => setIsInspectorOpen(false)}
+          />
+        )}
+      </div>
+    </main>
 
       {/* 3. TICKET DETAILS MODAL (When tapping any raised ticket) */}
       {selectedTicket && (

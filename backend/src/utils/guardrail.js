@@ -9,7 +9,8 @@
  * caught (errs towards blocking).
  */
 const UNAVAILABLE_PERSONAL_PATTERNS = [
-  /\bmy\s+(results?|marks|grades?|scores?|cgpa|sgpa|gpa|rank|transcripts?)\b/i,
+  /\bmy\s+([\w-]+\s+)?(results?|marks|grades?|scores?|cgpa|sgpa|gpa|rank|transcripts?)\b/i,
+  /\b(results?|marks|grades?|cgpa|sgpa)\s+for\s+(me|my\s+[\w\s]+)\b/i,
   /\b(how many|do i have( any)?|check|my)\s+backlogs?\b/i,
   /\bmy\s+(roll\s*(number|no\.?)|enrol+ment\s*(number|no\.?)|student\s*id)\b/i,
 ];
